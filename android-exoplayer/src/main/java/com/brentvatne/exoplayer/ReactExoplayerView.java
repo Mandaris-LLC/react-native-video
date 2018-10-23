@@ -99,6 +99,7 @@ class ReactExoplayerView extends FrameLayout implements
     private DataSource.Factory mediaDataSourceFactory;
     private SimpleExoPlayer player;
     private DefaultTrackSelector trackSelector;
+    private DefaultLoadControl defaultLoadControl;
     private boolean playerNeedsSource;
 
     private int resumeWindow;
@@ -241,6 +242,9 @@ class ReactExoplayerView extends FrameLayout implements
 
     private void initializePlayer() {
         if (player == null) {
+            if(defaultLoadControl != null){
+                defaultLoadControl.onReleased();
+            }
             TrackSelection.Factory videoTrackSelectionFactory = new AdaptiveTrackSelection.Factory(BANDWIDTH_METER);
             trackSelector = new DefaultTrackSelector(videoTrackSelectionFactory);
             DefaultAllocator allocator = new DefaultAllocator(true, C.DEFAULT_BUFFER_SEGMENT_SIZE);
