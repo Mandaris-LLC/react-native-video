@@ -206,7 +206,7 @@ class ReactExoplayerView extends FrameLayout implements
         /* We want to be able to continue playing audio when switching tabs.
          * Leave this here in case it causes issues.
          */
-        stopPlayback();
+        // stopPlayback();
     }
 
     // LifecycleEventListener implementation
