@@ -168,6 +168,14 @@ class ReactExoplayerView extends FrameLayout implements
         audioBecomingNoisyReceiver = new AudioBecomingNoisyReceiver(themedReactContext);
 
         initializePlayer();
+
+        //add on free instance listener
+        ReactExoplayerResourcesManager.reg(new ReactExoplayerResourcesManager.OnFreeInstanceListener() {
+            @Override
+            public void onFreeInstance() {
+                cleanUpResources();
+            }
+        });
     }
 
 
@@ -197,11 +205,13 @@ class ReactExoplayerView extends FrameLayout implements
     @Override
     protected void onAttachedToWindow() {
         super.onAttachedToWindow();
+        //Log.e("TEST", "onAttachToWindow");
         initializePlayer();
     }
 
     @Override
     protected void onDetachedFromWindow() {
+        //Log.e("TEST", "onDetachFromWindow");
         super.onDetachedFromWindow();
         /* We want to be able to continue playing audio when switching tabs.
          * Leave this here in case it causes issues.
@@ -213,6 +223,7 @@ class ReactExoplayerView extends FrameLayout implements
 
     @Override
     public void onHostResume() {
+        //Log.e("TEST", "onHostResume");
         if (!playInBackground || !isInBackground) {
             setPlayWhenReady(!isPaused);
         }
@@ -221,6 +232,7 @@ class ReactExoplayerView extends FrameLayout implements
 
     @Override
     public void onHostPause() {
+        //Log.e("TEST", "onHostPause");
         isInBackground = true;
         if (playInBackground) {
             return;
@@ -230,6 +242,7 @@ class ReactExoplayerView extends FrameLayout implements
 
     @Override
     public void onHostDestroy() {
+        //Log.e("TEST", "onHostDestroy");
         stopPlayback();
     }
 
