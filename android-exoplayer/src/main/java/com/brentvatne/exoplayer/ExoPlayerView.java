@@ -2,6 +2,8 @@ package com.brentvatne.exoplayer;
 
 import android.annotation.TargetApi;
 import android.content.Context;
+import android.net.wifi.WifiManager;
+import android.os.PowerManager;
 import android.support.v4.content.ContextCompat;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -37,6 +39,10 @@ public final class ExoPlayerView extends FrameLayout {
     private SimpleExoPlayer player;
     private Context context;
     private ViewGroup.LayoutParams layoutParams;
+    private static final String WAKELOCK_TAG = "react-native-video:WAKELOCK_TAG";
+    private static final String WIFILOCK_TAG = "react-native-video:WIFILOCK_TAG";
+    private PowerManager.WakeLock mWakelock = null;
+    private WifiManager.WifiLock mWifilock = null;
 
     private boolean useTextureView = false;
 
@@ -187,6 +193,57 @@ public final class ExoPlayerView extends FrameLayout {
         shutterView.setVisibility(VISIBLE);
     }
 
+    private void acquireWakelocks() {
+        try {
+            if(mWakelock==null) {
+                PowerManager powerManager = (PowerManager)getContext().getApplicationContext().getSystemService(Context.POWER_SERVICE);
+                if(powerManager!=null) {
+                    mWakelock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, WAKELOCK_TAG);
+                    if(mWakelock!=null) {
+                        mWakelock.acquire();
+                    }
+                }
+            }
+        }
+        catch (Exception e) {
+            //
+        }
+        try {
+            if(mWifilock==null) {
+                WifiManager wifiManager = (WifiManager) getContext().getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+                if(wifiManager!=null) {
+                    mWifilock = wifiManager.createWifiLock(WIFILOCK_TAG);
+                    if(mWifilock!=null) {
+                        mWifilock.acquire();
+                    }
+                }
+            }
+        }
+        catch (Exception e) {
+            //
+        }
+    }
+    private void releaseWakelocks() {
+        try {
+            if(mWakelock!=null) {
+                mWakelock.release();
+                mWakelock = null;
+            }
+        }
+        catch (Exception e) {
+            //
+        }
+        try {
+            if(mWifilock!=null) {
+                mWifilock.release();
+                mWifilock = null;
+            }
+        }
+        catch (Exception e) {
+            //
+        }
+    }
+
     private final class ComponentListener implements SimpleExoPlayer.VideoListener,
             TextRenderer.Output, ExoPlayer.EventListener {
 
@@ -225,6 +282,12 @@ public final class ExoPlayerView extends FrameLayout {
         @Override
         public void onPlayerStateChanged(boolean playWhenReady, int playbackState) {
             // Do nothing.
+
+            //enable/disable wakelocks
+            if(playWhenReady) {
+                acquireWakelocks();
+            }
+            else releaseWakelocks();
         }
 
         @Override
@@ -268,4 +331,9 @@ public final class ExoPlayerView extends FrameLayout {
         }
     }
 
+    @Override
+    protected void finalize() throws Throwable {
+        releaseWakelocks();
+        super.finalize();
+    }
 }
